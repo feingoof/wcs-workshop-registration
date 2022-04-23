@@ -1,20 +1,3 @@
-function foo() {
-    const signupRow = getSheet(SheetIds.ANSWERS).getDataRange().getValues()[1]
-    Logger.log(signupRow)
-    Logger.log(parseStateRow(signupRow))
-    const state = signupToState(parseAnswerRow(signupRow));
-    Logger.log(state)
-    writeStateRow(state)
-}
-
-function getColumnTitles() {
-    const answerData = sheets.answers().getDataRange().getValues();
-    const topRow = answerData[0];
-    answerData.forEach(row => {
-        Logger.log(row);
-    });
-}
-
 function parseAnswerRow(row: string[]): SignupRow {
     const [timestamp, email, name, membership, classes, role, partner] = row;
 

@@ -36,3 +36,15 @@ type State = "NEW"
   | "CONFIRMED"
 
 type WsClass = "CLASS_1" | "CLASS_2"
+
+interface EventParameters {
+  maxImbalance: number,
+  maxParticipants: number,
+  leaderBias: number,
+  followerBias: number,
+}
+
+interface FreeSpots {
+  leaders: number,
+  followers: number,
+}

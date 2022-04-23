@@ -21,6 +21,34 @@ function onNewRegistration() {
   // - Run state machine
 }
 
+function countFreeSpots(): number {
+  const params = getParameters()
+  return params.maxParticipants - countUnclaimed()
+}
+
+function countUnclaimed(): number {
+  return getAllStates()
+    .filter(s => !["NEW", "CANCELLED", "WAITING_LIST"].includes(s.state))
+    .length
+}
+
+function getAllStates(): StateRow[] {
+  return sheets.state().getDataRange().getValues()
+    .slice(1)
+    .map(parseStateRow)
+}
+
+function getParameters(): EventParameters {
+  const sheetValues = sheets.parameters().getDataRange().getValues()
+  const find = (needle: string) => sheetValues.find(([key, value]) => key === needle)[1]
+  return {
+    maxImbalance: find("maxImbalance"),
+    maxParticipants: find("maxParticipants"),
+    leaderBias: find("leaderBias"),
+    followerBias: find("followerBias"),
+  }
+}
+
 /**
  * Run each time the sheet changes.
  */
