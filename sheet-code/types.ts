@@ -1,6 +1,6 @@
 interface SignupRow {
   // Tidsmerke	E-postadresse	Full name	Membership	Classes	Role	Partner's name (optional)
-  timestamp: string,
+  timestamp: Date,
   email: string,
   name: string,
   membership: string,
@@ -18,7 +18,8 @@ interface StateRow {
   membership: boolean,
   classes: WsClass[],
   role: Role,
-  partner?: string,
+  partner: string | undefined,
+  price: number,
   state: State,
   partnerConfirmed: boolean,
   paymentConfirmed: boolean,
@@ -35,7 +36,3 @@ type State = "NEW"
   | "CONFIRMED"
 
 type WsClass = "CLASS_1" | "CLASS_2"
-
-enum Foos {
-    bar = "BAR"
-}

@@ -1,3 +1,12 @@
+function foo() {
+    const signupRow = getSheet(SheetIds.ANSWERS).getDataRange().getValues()[1]
+    Logger.log(signupRow)
+    Logger.log(parseStateRow(signupRow))
+    const state = signupToState(parseAnswerRow(signupRow));
+    Logger.log(state)
+    writeStateRow(state)
+}
+
 function getColumnTitles() {
     const answerData = sheets.answers().getDataRange().getValues();
     const topRow = answerData[0];
@@ -10,7 +19,7 @@ function parseAnswerRow(row: string[]): SignupRow {
     const [timestamp, email, name, membership, classes, role, partner] = row;
 
     return {
-        timestamp: timestamp,
+        timestamp: timestamp as unknown as Date,
         email: email,
         name: name,
         membership: membership,
@@ -20,18 +29,20 @@ function parseAnswerRow(row: string[]): SignupRow {
     };
 }
 
-function stateObjToStateList(obj: StateRow) {
-    return [obj.timestamp, obj.email, obj.name, obj.membership, obj.classes, obj.role,
-    obj.partner, obj.state, obj.paymentConfirmed, obj.paymentReference];
-}
-
 function parseStateRow(row: any[]): StateRow {
-    const [timestamp, email, name, membership, classes, role, partner, state,
-        partnerConfirmed, paymentConfirmed, paymentReference] = row;
+    const [timestamp, email, name, membership, classes, role, partner, price,
+        state, partnerConfirmed, paymentConfirmed, paymentReference] = row;
     return {
-        timestamp, email, name, membership, classes, role,
+        timestamp, email, name, membership, classes, role, price,
         partner, partnerConfirmed, state, paymentConfirmed, paymentReference
     }
+}
+
+function computePrice(membership: boolean, classes: WsClass[]) {
+    const MEMBER_PRICE = 100
+    const REGULAR_PRICE = 150
+    const pricePerClass = membership ? MEMBER_PRICE : REGULAR_PRICE
+    return pricePerClass * classes.length
 }
 
 function signupToState(signup: SignupRow): StateRow {
@@ -40,27 +51,50 @@ function signupToState(signup: SignupRow): StateRow {
         .filter(([prefix, _]) => rawClasses.includes(prefix))
         .map(([_, v]) => v as WsClass);
 
+    const classes = parseClasses(signup.classes)
+    const role = signup.role as Role;
+    const membership = parseMembership(signup.membership);
+
     return {
-        timestamp: signup.timestamp,
+        timestamp: signup.timestamp.toISOString(),
         email: signup.email,
         name: signup.name,
-        membership: parseMembership(signup.membership),
-        classes: parseClasses(signup.classes),
-        role: signup.role as Role,
+        membership: membership,
+        classes: classes,
+        role: role,
+        partner: signup.partner,
+        price: computePrice(membership, classes),
         state: "NEW",
         partnerConfirmed: false,
         paymentConfirmed: false,
     }
 }
 
-function writeStateRow(obj) {
+function rowifyState(obj: StateRow) {
+    const { timestamp, email, name, membership, classes, role, partner, price,
+        state, partnerConfirmed, paymentConfirmed, paymentReference } = obj
+    const stateRow = [timestamp, email, name, membership, JSON.stringify(classes), role, partner, price,
+        state, partnerConfirmed, paymentConfirmed, paymentReference]
+    return stateRow
+}
+
+function writeStateRow(obj: StateRow) {
+    const stateRow = rowifyState(obj)
+
     const stateSheet = sheets.state();
     const rowNumber = stateSheet.getDataRange().getValues()
-        .findIndex(row => row[0] == obj.timestamp && row[1] == obj.email);
-    const stateRow = stateObjToStateList(obj);
+        .findIndex(row => row[0] == obj.timestamp && row[1] === obj.email);
+
+    Logger.log("Row index: " + rowNumber);
     if (rowNumber === -1) {
         stateSheet.appendRow(stateRow);
     } else {
-        stateSheet.getRange(`A${rowNumber}`).setValues([stateRow]);
+        const i = rowNumber + 1
+        stateSheet.getRange(`A${i}:L${i}`).setValues([stateRow]);
     }
+}
+
+function writeStateRowAtRow(rowNumber: number, row: StateRow) {
+    const stateRow = rowifyState(row)
+    sheets.state().getRange(`A${rowNumber}:L${rowNumber}`).setValues([stateRow]);
 }

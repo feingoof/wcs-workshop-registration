@@ -1,5 +1,11 @@
 @startuml
-!theme amiga
+
+' !theme crt-amber
+!theme crt-green
+' !theme amiga
+
+skinparam DefaultFontName JetBrains Mono
+skinparam RoundCorner 0
 
 [*] --> NEW
 
@@ -7,24 +13,20 @@ state new_choice <<choice>>
 
 NEW --> new_choice
 
-new_choice --> WAITING_LIST : spots_free = 0
-new_choice --> AWAITING_PAYMENT : spots_free > 0
+new_choice --> WAITING_LIST : spots_free(role) = 0
+new_choice --> AWAITING_PAYMENT : spots_free(role) > 0
 new_choice --> PARTNER_SIGNUP : partner_name != ""
 
-PARTNER_SIGNUP --> AWAITING_PAYMENT : Partner confirmed
+PARTNER_SIGNUP --> AWAITING_PAYMENT : partnerConfirmed
 PARTNER_SIGNUP --> CANCELLED : Manual state change
 
 WAITING_LIST --> new_choice : on_change
 
 WAITING_LIST --> CANCELLED : Cancellation requested
 
-AWAITING_PAYMENT --> CANCELLED : Payment not received within 24 h
+AWAITING_PAYMENT --> CANCELLED : !paymentReceived &&\nnow() - paymentRequestTime > 24h
 
-AWAITING_PAYMENT --> CONFIRMED : Payment received
-
-state CONFIRMED {
-
-}
+AWAITING_PAYMENT --> CONFIRMED : paymentReceived: false -> true
 
 
 @enduml

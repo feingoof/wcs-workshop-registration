@@ -1,19 +1,23 @@
 /**
- * 
- */
-function processAll() {
-  logSheet("Manual processing started");
-  getAllRows().forEach(row => {
-
-  });
-}
-
-/**
  * Run each time a new registration happens.
  */
 function onNewRegistration() {
   logSheet("New registration");
-  // - Map registration to internal representation
+  // - Copy new signup(s) to the state sheet
+  const stateSheet = sheets.state()
+  enumerate(sheets.answers().getDataRange().getValues())
+    .slice(1) // Ignore column headers
+    .forEach(([index, signupRow]) => {
+      const rowNumber = index + 1
+      const r = signupToState(parseAnswerRow(signupRow))
+      Logger.log([rowNumber, r])
+      if (!stateSheet.getRange(`A${rowNumber}`).getValue()) {
+        Logger.log("Nothing there")
+        writeStateRowAtRow(rowNumber, r)
+      } else {
+        Logger.log("Something there")
+      }
+    })
   // - Run state machine
 }
 
@@ -38,14 +42,17 @@ function onEdit(changeEvent) {
   // - Manually edited 
 }
 
-function sendEmail(
-  recipient: string,
-  title: string,
-  body: string
-) {
-  GmailApp.createDraft
+/**
+ * 
+ */
+function processAll() {
+  logSheet("Manual processing started");
 }
 
-function getAllRows() {
-  return [];
+function enumerate<T,>(xs: T[]): ([number, T])[] {
+  const ys = []
+  xs.forEach((t, ix) => {
+    ys.push([ix, t])
+  })
+  return ys
 }

@@ -5,7 +5,7 @@ const sheets = {
   parameters: () => getSheet(SheetIds.PARAMETERS),
 }
 
-const enum SheetIds {
+enum SheetIds {
   STATE = "Tilstand",
   ANSWERS = "Skjemasvar 1",
   LOG = "script_log",
