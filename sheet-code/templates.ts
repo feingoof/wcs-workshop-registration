@@ -34,8 +34,10 @@ Best regards,
 NTNUI Dance WCS`
 }
 
+const firstGreeting = "Hi, and thanks for signing up for our workshop!"
+
 /** Waiting list message */
-const waitingListBody = () => `Hi, and thanks for signing up for our workshop!
+const waitingListBody = () => `${firstGreeting}
 
 To ensure balance between roles in the classes, we have had to put in place a waiting list. Unfortunately, you have been put on this waiting list.
 
@@ -43,7 +45,7 @@ We will send you a new email once enough people of the opposite role have signed
 
 
 /** Body text for payment info */
-const paymentInfo = (price: number) => `Hi, and thanks for signing up for our workshop!
+const paymentInfo = (price: number) => `${firstGreeting}
 
 You have received a spot. To complete your registration, we just need your payment. Payment must be done within 24 hours after receiving this email, or your spot may be given to the next person on the waiting list.
 
@@ -66,3 +68,11 @@ Vipps number: 746109 (NTNUi Dans > NTNUI West Coast Swing Kurs)
 Price: ${price} NOK
 
 After paying, please reply to this email with a screenshot of the Vipps receipt.`
+
+/** The subject wrote something in the partner field */
+const SUBJECT_CLAIMS_PARTNER = firstGreeting
+  + "\n\n"
+  + "There is a waiting list, but since you signed up with a partner, you will skip "
+  + "the waiting list as soon as we have confirmed your partner's registration. "
+  + "Please note that it is necessary that your partner registers as well, "
+  + "otherwise we cannot complete your registration."

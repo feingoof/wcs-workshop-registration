@@ -18,9 +18,9 @@ function wontBreakBalance(role: Role): boolean {
     const params = getParameters()
     const { leaders, followers } = countTakenSpotsByRole()
     if (role === "Leader") {
-        return (followers / (leaders + 1)) > (1 / params.maxImbalance)
+        return (leaders + 1) < (followers * params.maxImbalance)
     } else {
-        return (leaders / (followers + 1)) > (1 / params.maxImbalance)
+        return (followers + 1) < (leaders * params.maxImbalance)
     }
 }
 
@@ -29,16 +29,26 @@ function canAdmit(role: Role): boolean {
     const freeSpots = countFreeSpots()
     const spotLeft = freeSpots > 0
     Logger.log(`free spots: ${freeSpots}, wontBreakBalance: ${wontBreakBalance(role)}`)
-    return spotLeft && wontBreakBalance(role)
+    return (spotLeft && wontBreakBalance(role))
 }
 
 function evaluateNewState(fsm: NewState | WaitingListState): FsmState {
     Logger.log("Evaluating new/waiting list state", fsm, fsm.stateRow)
-    if (fsm.stateRow.partner) {
+
+    const mentionedPartners = () => getAllFsms()
+        .filter(s => s.stateName == "PARTNER_SIGNUP")
+        .map(s => s.stateRow.partner)
+
+    if (mentionedPartners().includes(fsm.stateRow.name)) {
         return new PartnerSignupState(fsm.stateRow)
-    } else if (canAdmit(fsm.stateRow.role)) {
+    }
+    else if (canAdmit(fsm.stateRow.role)) {
         return new AwaitingPaymentState(fsm.stateRow)
-    } else {
+    }
+    else if (fsm.stateRow.partner) {
+        return new PartnerSignupState(fsm.stateRow)
+    }
+    else {
         return new WaitingListState(fsm.stateRow)
     }
 }
@@ -88,6 +98,24 @@ class NewState extends BaseState {
         Logger.log("Initial evaluation", this, this.stateRow)
         const newState = evaluateNewState(this)
         Logger.log("New state", newState)
+        if (newState.stateName == "PARTNER_SIGNUP") {
+            const personClaimsPartner = !!newState.stateRow.partner
+            if (personClaimsPartner) {
+                sendEmail(
+                    this.stateRow.email,
+                    emailTitle("Partner confirmation"),
+                    emailBody(SUBJECT_CLAIMS_PARTNER)
+                )
+            } else {
+                // This person's name was listed as someone else's partner.
+                // Hold it for manual processing.
+            }
+            sendEmail(
+                "***REMOVED***",
+                emailTitle("Manual intervention required"),
+                JSON.stringify(newState)
+            )
+        }
         if (newState.stateName == "WAITING_LIST") {
             sendEmail(
                 this.stateRow.email,
