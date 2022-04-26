@@ -1,23 +1,33 @@
-function parseAnswerRow(row: string[]): SignupRow {
-    const [timestamp, email, name, membership, classes, role, partner] = row;
+function parseAnswerRow(row: string[]): SignupRow | undefined {
+    try {
+        const [timestamp, email, name, membership, classes, role, partner] = row;
 
-    return {
-        timestamp: timestamp as unknown as Date,
-        email: email,
-        name: name,
-        membership: membership,
-        classes: classes,
-        role: role,
-        partner: partner
-    };
+        return {
+            timestamp: timestamp as unknown as Date,
+            email: email,
+            name: name,
+            membership: membership,
+            classes: classes,
+            role: role,
+            partner: partner
+        };
+    } catch (error) {
+        Logger.log(error)
+        return undefined
+    }
 }
 
-function parseStateRow(row: any[]): StateRow {
-    const [timestamp, email, name, membership, classes, role, partner, price,
-        state, partnerConfirmed, paymentConfirmed, paymentReference] = row;
-    return {
-        timestamp, email, name, membership, classes, role, price,
-        partner, partnerConfirmed, state, paymentConfirmed, paymentReference
+function parseStateRow(row: any[]): StateRow | undefined {
+    try {
+        const [timestamp, email, name, membership, classes, role, partner, price,
+            state, partnerConfirmed, paymentConfirmed, cancelled, note, reevaluate] = row;
+        return {
+            timestamp, email, name, membership, classes: JSON.parse(classes), role, price,
+            partner, partnerConfirmed, state, paymentConfirmed, cancelled, note, reevaluate
+        }
+    } catch (error) {
+        Logger.log(error)
+        return undefined
     }
 }
 
@@ -50,19 +60,32 @@ function signupToState(signup: SignupRow): StateRow {
         state: "NEW",
         partnerConfirmed: false,
         paymentConfirmed: false,
+        cancelled: false,
+        note: "",
+        reevaluate: false,
     }
+}
+
+function insertCheckBoxes() {
+    const sheet = sheets.state()
+    const numRows = sheet.getDataRange().getNumRows()
+    sheet.getRange(`J2:L${numRows}`).insertCheckboxes()
+    sheet.getRange(`N2:N${numRows}`).insertCheckboxes()
 }
 
 function rowifyState(obj: StateRow) {
     const { timestamp, email, name, membership, classes, role, partner, price,
-        state, partnerConfirmed, paymentConfirmed, paymentReference } = obj
+        state, partnerConfirmed, paymentConfirmed, note } = obj
     const stateRow = [timestamp, email, name, membership, JSON.stringify(classes), role, partner, price,
-        state, partnerConfirmed, paymentConfirmed, paymentReference]
+        state, partnerConfirmed, paymentConfirmed, note]
     return stateRow
 }
 
 function writeStateRow(obj: StateRow) {
-    const stateRow = rowifyState(obj)
+    const stateRow = rowifyState({
+        ...obj,
+        reevaluate: false,
+    })
 
     const stateSheet = sheets.state();
     const rowNumber = stateSheet.getDataRange().getValues()
@@ -71,13 +94,23 @@ function writeStateRow(obj: StateRow) {
     Logger.log("Row index: " + rowNumber);
     if (rowNumber === -1) {
         stateSheet.appendRow(stateRow);
+        insertCheckBoxes()
     } else {
         const i = rowNumber + 1
         stateSheet.getRange(`A${i}:L${i}`).setValues([stateRow]);
     }
 }
 
-function writeStateRowAtRow(rowNumber: number, row: StateRow) {
+function appendStateRow(row: StateRow) {
     const stateRow = rowifyState(row)
-    sheets.state().getRange(`A${rowNumber}:L${rowNumber}`).setValues([stateRow]);
+    sheets.state().appendRow(stateRow)
+    insertCheckBoxes()
+}
+
+function getState(rowNumber: number): FsmState | undefined {
+    logSheet(`Loading state row ${rowNumber}`)
+    const rawRow = sheets.state().getDataRange().getValues()[rowNumber - 1]
+    const parsedState = parseStateRow(rawRow);
+    logSheet(`State row ${rowNumber}: ${JSON.stringify(parsedState)}`)
+    return parsedState && stateToFsm(parsedState)
 }

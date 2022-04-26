@@ -10,20 +10,20 @@ interface SignupRow {
 }
 
 interface StateRow {
-  // Tidsmerke	E-postadresse	Full name	Membership	Classes	Role 
-  // Partner	State	Payment received	Payment reference
-  timestamp: string,
-  email: string,
-  name: string,
-  membership: boolean,
-  classes: WsClass[],
-  role: Role,
-  partner: string | undefined,
-  price: number,
-  state: State,
-  partnerConfirmed: boolean,
-  paymentConfirmed: boolean,
-  paymentReference?: string
+  timestamp: string
+  email: string
+  name: string
+  membership: boolean
+  classes: WsClass[]
+  role: Role
+  partner: string | undefined
+  price: number
+  state: State
+  partnerConfirmed: boolean
+  paymentConfirmed: boolean
+  cancelled: boolean
+  note: string
+  reevaluate: boolean
 }
 
 type Role = "Leader" | "Follower"
@@ -44,7 +44,12 @@ interface EventParameters {
   followerBias: number,
 }
 
-interface FreeSpots {
+interface TakenSpots {
   leaders: number,
   followers: number,
 }
+
+type ChangeEvent = "PAYMENT_RECEIVED"
+  | "PARTNER_CONFIRMED"
+  | "CANCELLED"
+  | "EVALUATE"

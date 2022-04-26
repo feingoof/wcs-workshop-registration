@@ -3,6 +3,6 @@ function logSheet(
   severity = "INFO"
 ) {
   const sheet = getSheet(SheetIds.LOG);
-  sheet.appendRow([new Date().toISOString(), severity, msg])
+  sheet!.appendRow([new Date().toISOString(), severity, msg])
 }
 

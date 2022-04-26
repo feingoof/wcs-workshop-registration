@@ -1,6 +1,13 @@
 {
-    "compilerOptions": {
-      "lib": ["esnext"],
-      "experimentalDecorators": true
-    }
+  "compilerOptions": {
+    "lib": [
+      "esnext"
+    ],
+    "experimentalDecorators": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictPropertyInitialization": true
   }
+}

@@ -1,8 +1,8 @@
 const sheets = {
-  state: () => getSheet(SheetIds.STATE),
-  answers: () => getSheet(SheetIds.ANSWERS),
-  log: () => getSheet(SheetIds.LOG),
-  parameters: () => getSheet(SheetIds.PARAMETERS),
+  state: () => getSheet(SheetIds.STATE)!,
+  answers: () => getSheet(SheetIds.ANSWERS)!,
+  log: () => getSheet(SheetIds.LOG)!,
+  parameters: () => getSheet(SheetIds.PARAMETERS)!,
 }
 
 enum SheetIds {
