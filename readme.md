@@ -14,10 +14,15 @@ A Google Sheets application (yes, really...) for partially automating the proces
   - Payment notifications have been handled by a combination of asking registrants to send their Vipps transaction receipt by email and getting a list of payments from NTNUI Dance's finance officer.
 - Partner registrations require manual processing.
 - No update emails are sent about waiting list positions. A periodic update could be nice.
+- The data format is tightly coupled to the specifics of the 2022 spring course, and will likely have to be modified to be used for other cases.
 - It is unknown whether it works at all if a different user than the one who configured it does something (e.g. registering a payment as received) in the application.
 
 ## Setup
 To use it, create a Google Form to gather the necessary information about the people registering, create a Google Sheet connected to the Form, and upload the script using Google's `clasp` tool.
+
+The application expects certain sheets to exist.
+These have to be created.
+See `SheetIds` in `dataAccess.ts` for a list of required sheets.
 
 After that, a trigger has to be installed so that the processing function is run when new registrations arrive and when manual actions are performed in the sheet.
 
