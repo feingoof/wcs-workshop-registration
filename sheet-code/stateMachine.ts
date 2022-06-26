@@ -11,7 +11,7 @@ function countTakenSpotsByRole(): TakenSpots {
 }
 
 /**
- * Check if admitting one person of the given role will cause an unacceptable 
+ * Check if admitting one person of the given role will cause an unacceptable
  * role imbalance.
  */
 function wontBreakBalance(role: Role): boolean {
@@ -111,7 +111,7 @@ class NewState extends BaseState {
                 // Hold it for manual processing.
             }
             sendEmail(
-                "***REMOVED***",
+                adminEmailAddress,
                 emailTitle("Manual intervention required"),
                 JSON.stringify(newState)
             )
