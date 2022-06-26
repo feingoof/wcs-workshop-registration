@@ -124,10 +124,9 @@ class NewState extends BaseState {
             )
         }
         if (newState.stateName == "AWAITING_PAYMENT") {
-            sendEmail(
+            sendPaymentInfo(
                 this.stateRow.email,
-                emailTitle("Payment information"),
-                emailBody(paymentInfo(this.stateRow.price))
+                this.stateRow.price
             )
         }
         newState.save()
@@ -135,15 +134,19 @@ class NewState extends BaseState {
     }
 }
 
+function sendPaymentInfo(address: string, price: number) {
+    sendEmail(
+        address,
+        emailTitle("Payment information"),
+        emailBody(paymentInfo(price))
+    )
+}
+
 
 const confirmPartner = (fsm: FsmState) => {
     Logger.log("Partner confirmed", fsm)
     const newState = new AwaitingPaymentState(fsm.stateRow)
-    sendEmail(
-        fsm.stateRow.email,
-        emailTitle("Payment information"),
-        emailBody(paymentInfo(fsm.stateRow.price))
-    )
+    sendPaymentInfo(fsm.stateRow.email, fsm.stateRow.price)
     newState.save()
 }
 
@@ -164,11 +167,7 @@ class WaitingListState extends BaseState {
         Logger.log("Reevaluating waiting list", this)
         const newState = evaluateNewState(this)
         if (newState.stateName == "AWAITING_PAYMENT") {
-            sendEmail(
-                this.stateRow.email,
-                emailTitle("Payment information"),
-                emailBody(paymentInfoAfterWaiting(this.stateRow.price))
-            )
+            sendPaymentInfo(this.stateRow.email, this.stateRow.price)
         }
         newState.save()
         return newState
