@@ -21,6 +21,9 @@ To use it, create a Google Form to gather the necessary information about the pe
 
 After that, a trigger has to be installed so that the processing function is run when new registrations arrive and when manual actions are performed in the sheet.
 
+In certain situations the application will send an email notification about required manual interaction.
+These notifications are sent to the address defined in `constants.ts`, so that has to be configured.
+
 ## Architecture
 The application is designed as a state machine.
 When a new registration occurs, the data is read from the raw registration data sheet, certain fields are processed, and the processed data is written to an application internal sheet in the `NEW` state.
